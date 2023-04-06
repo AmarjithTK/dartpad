@@ -2,7 +2,7 @@ name: Build APK and Linux Package
 
 on:
   push:
-    branches: [main]
+    branches: [timerapp]
 
 jobs:
   build:
