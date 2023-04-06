@@ -22,16 +22,22 @@ class TimerApp extends StatefulWidget {
 class _TimerAppState extends State<TimerApp> {
   late Timer _timer = Timer(Duration.zero, () {});
 
-  FlutterTts flutterTts = FlutterTts();
+  // FlutterTts flutterTts = FlutterTts();
 
-  Future _speak(String word) async {
-    await flutterTts.setVolume(1.0);
+  // Future _speak(String word) async {
+  //   await flutterTts.setVolume(1.0);
 
-    var result = await flutterTts.speak(word);
-    // if (result == 1) setState(() => ttsState = TtsState.playing);
-    // await flutterTts.setLanguage("en-US");
+  //   var result = await flutterTts.speak(word);
+  //   // if (result == 1) setState(() => ttsState = TtsState.playing);
+  //   // await flutterTts.setLanguage("en-US");
 
-    // await flutterTts.setSpeechRate(1.0);
+  //   // await flutterTts.setSpeechRate(1.0);
+  // }
+  FlutterTts ftts = FlutterTts();
+
+  void speakTTS(String word) async {
+//play text to speech
+    var result = await ftts.speak(word);
   }
 
   // late int _durationInSeconds = 0;
@@ -146,6 +152,8 @@ class _TimerAppState extends State<TimerApp> {
     audioPlayer.dispose();
     super.dispose();
     _timer.cancel();
+    // ftts.cancelHandler();
+    // ftts;
   }
 
   Widget build(BuildContext context) {
@@ -258,12 +266,13 @@ class _TimerAppState extends State<TimerApp> {
                         setState(() {
                           // _isRunning = !_isRunning; // true now
                           if (timerStatus == TimerStatus.initial ||
-                              timerStatus == TimerStatus.resetted) {
+                              timerStatus == TimerStatus.resetted ||
+                              timerStatus == TimerStatus.stopped) {
                             _durationInSeconds =
                                 _durationInSeconds > 0 ? _durationInSeconds : 0;
 
                             startTimer();
-                            _isRunning = true;
+                            // _isRunning = true;
                             timerStatus = TimerStatus.started;
                           }
                         });
@@ -345,7 +354,7 @@ class _TimerAppState extends State<TimerApp> {
         // if (Platform.isAndroid) {
         if (_durationInSeconds % 60 == 0 && Platform.isAndroid) {
           print('bin here');
-          _speak("$_durationInSeconds/60 seconds");
+          speakTTS("$_durationInSeconds/60 seconds");
           // }
         }
 
@@ -356,7 +365,7 @@ class _TimerAppState extends State<TimerApp> {
           timer.cancel();
           if (Platform.isAndroid) {
             // var user;
-            _speak("Timer is finished $user");
+            speakTTS("Timer is finished $user");
           }
 
           _timer = Timer(Duration.zero, () {});
