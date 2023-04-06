@@ -1,9 +1,12 @@
 // import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+// import 'package:flutter_tts/flutter_tts_web.dart';
 import 'package:sleek_circular_slider/sleek_circular_slider.dart';
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
+import 'dart:io';
+import 'package:flutter_tts/flutter_tts.dart';
 
 // add assets and improvise this app further in another day
 
@@ -17,11 +20,25 @@ class TimerApp extends StatefulWidget {
 class _TimerAppState extends State<TimerApp> {
   late Timer _timer = Timer(Duration.zero, () {});
 
+  FlutterTts flutterTts = FlutterTts();
+
+  Future _speak(String word) async {
+    var result = await flutterTts.speak(word);
+    // if (result == 1) setState(() => ttsState = TtsState.playing);
+    await flutterTts.setLanguage("en-US");
+
+    await flutterTts.setSpeechRate(1.0);
+
+    await flutterTts.setVolume(1.0);
+  }
+
   // late int _durationInSeconds = 0;
   // late int _initialDurationInSeconds = 0;
   // int _currentSliderValue = 5;
   bool _isRunning = false;
   bool _isFinished = true;
+
+  String user = "Amarjith TK";
 
   List<int> presets = [
     1,
@@ -29,6 +46,7 @@ class _TimerAppState extends State<TimerApp> {
     3,
     4,
     5,
+    6,
     10,
     15,
     20,
@@ -36,6 +54,7 @@ class _TimerAppState extends State<TimerApp> {
     30,
     35,
     40,
+    45,
     50,
     60,
     70,
@@ -43,8 +62,13 @@ class _TimerAppState extends State<TimerApp> {
     90,
     100,
     110,
-    120
+    120,
+    180,
+    240,
+    150,
   ];
+
+  // presets.sort();
 
   late int _durationInSeconds = 0;
 
@@ -56,10 +80,13 @@ class _TimerAppState extends State<TimerApp> {
   AudioPlayer audioPlayer = AudioPlayer();
   bool isPlaying = false;
 
+  double setVolume = .5;
+
   Future<void> loadAudio() async {
     // await audioPlayer.setAsset('assets/audio.mp3');
     await audioPlayer.setSourceAsset('river-2.mp3');
     await audioPlayer.setReleaseMode(ReleaseMode.loop);
+    audioPlayer.setVolume(setVolume);
   }
 
   Future<void> playAudio() async {
@@ -85,6 +112,11 @@ class _TimerAppState extends State<TimerApp> {
 
   Widget build(BuildContext context) {
     // int durationInSeconds = _currentSliderValue * 60;
+    // presets = presets.sort((a, b) => a.compareTo(b));
+
+    presets.sort(
+      (a, b) => a.compareTo(b),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -92,7 +124,7 @@ class _TimerAppState extends State<TimerApp> {
         title: Center(
             child: Text(
           "Timer App",
-          style: TextStyle(fontSize: 25.0),
+          style: TextStyle(fontSize: 30.0),
         )),
         actions: [IconButton(onPressed: () {}, icon: Icon(Icons.menu))],
       ),
@@ -101,43 +133,49 @@ class _TimerAppState extends State<TimerApp> {
           crossAxisAlignment: CrossAxisAlignment.center,
           // mainAxisSize: MainAxisSize.max,
           children: [
-            SleekCircularSlider(
-                innerWidget: (percentage) {
-                  return Icon(
-                    Icons.work_history_rounded,
-                    color: Colors.white,
-                    size: 40,
-                  );
-                },
-                min: 5,
-                max: 121,
-                appearance: CircularSliderAppearance(
-                    size: 250,
-                    // size: 5,
-                    infoProperties: InfoProperties(
-                        mainLabelStyle:
-                            TextStyle(fontSize: 25, color: Colors.white))),
-                onChange: (double value) {
-                  setState(() {
-                    if (_isRunning == false && _isFinished == true)
-                      _durationInSeconds = value.toInt() * 60;
-                  });
-                }),
+            Padding(
+              padding: const EdgeInsets.only(top: 18.0),
+              child: SleekCircularSlider(
+                  initialValue: 10,
+                  innerWidget: (percentage) {
+                    return Icon(
+                      Icons.work_history_rounded,
+                      color: Colors.white,
+                      size: 40,
+                    );
+                  },
+                  min: 5,
+                  max: 121,
+                  appearance: CircularSliderAppearance(
+                      customWidths: CustomSliderWidths(progressBarWidth: 15),
+                      // angleRange: 360,
+                      // startAngle: 180,
+                      size: 200,
+                      // size: 5,
+                      infoProperties: InfoProperties(
+                          mainLabelStyle:
+                              TextStyle(fontSize: 25, color: Colors.white))),
+                  onChange: (double value) {
+                    setState(() {
+                      if (_isRunning == false && _isFinished == true)
+                        _durationInSeconds = value.toInt() * 60;
+                    });
+                  }),
+            ),
             Container(
               width: double.infinity,
               height: 100,
-              child: Container(
-                decoration: BoxDecoration(
-                    // color: Colors.,
-                    border: Border.all(color: Color.fromARGB(255, 34, 34, 34)),
-                    borderRadius: BorderRadius.circular(4)),
-                child: Center(
-                    child: Text(formatDuration(_durationInSeconds),
-                        style: TextStyle(fontSize: 50.0))),
-              ),
+              margin: EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                  // color: Colors.,
+                  border: Border.all(
+                      width: 4.0, color: Color.fromARGB(255, 52, 52, 52))),
+              child: Center(
+                  child: Text(formatDuration(_durationInSeconds),
+                      style: TextStyle(fontSize: 50.0))),
             ),
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: EdgeInsets.fromLTRB(0, 15, 0, 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -201,9 +239,10 @@ class _TimerAppState extends State<TimerApp> {
                     },
                     child: Container(
                       decoration: BoxDecoration(
-                          // color: Colors.,
+                          // color:kkk Colors.,
                           border: Border.all(
-                              color: Color.fromARGB(255, 34, 34, 34)),
+                              width: 4.0,
+                              color: Color.fromARGB(255, 52, 52, 52)),
                           borderRadius: BorderRadius.circular(4)),
                       child: Center(
                         child: Text(
@@ -213,7 +252,17 @@ class _TimerAppState extends State<TimerApp> {
                       ),
                     ),
                   );
-                })
+                }),
+            Slider(
+              value: setVolume * 10,
+              onChanged: (value) {
+                setState(() {
+                  setVolume = value / 10;
+                });
+              },
+              min: 1,
+              max: 10,
+            )
           ],
         ),
       ),
@@ -226,11 +275,23 @@ class _TimerAppState extends State<TimerApp> {
       setState(() {
         _durationInSeconds--;
 
+        if (Platform.isAndroid) {
+          if (_durationInSeconds % 60 == 0) {
+            _speak("$_durationInSeconds/60 seconds");
+          }
+        }
+
         playAudio();
 
         if (_durationInSeconds <= 0) {
           stopAudio();
           timer.cancel();
+          if (Platform.isAndroid) {
+            if (_durationInSeconds % 60 == 0) {
+              // var user;
+              _speak("Timer is finished $user");
+            }
+          }
 
           _timer = Timer(Duration.zero, () {});
           _isRunning = false;
