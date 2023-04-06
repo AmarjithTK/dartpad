@@ -1,11 +1,11 @@
-import 'package:assets_audio_player/assets_audio_player.dart';
+// import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sleek_circular_slider/sleek_circular_slider.dart';
 import 'dart:async';
+import 'package:audioplayers/audioplayers.dart';
 
 // add assets and improvise this app further in another day
-
-import 'package:timerapp/components/cardbutton.dart';
 
 class TimerApp extends StatefulWidget {
   const TimerApp({super.key});
@@ -16,13 +16,12 @@ class TimerApp extends StatefulWidget {
 
 class _TimerAppState extends State<TimerApp> {
   late Timer _timer = Timer(Duration.zero, () {});
+
   // late int _durationInSeconds = 0;
   // late int _initialDurationInSeconds = 0;
   // int _currentSliderValue = 5;
   bool _isRunning = false;
   bool _isFinished = true;
-
-  final AssetsAudioPlayer audioPlayer = AssetsAudioPlayer();
 
   List<int> presets = [
     1,
@@ -49,10 +48,39 @@ class _TimerAppState extends State<TimerApp> {
 
   late int _durationInSeconds = 0;
 
+  void initState() {
+    super.initState();
+    loadAudio();
+  }
+
+  AudioPlayer audioPlayer = AudioPlayer();
+  bool isPlaying = false;
+
+  Future<void> loadAudio() async {
+    // await audioPlayer.setAsset('assets/audio.mp3');
+    await audioPlayer.setSourceAsset('river-2.mp3');
+    await audioPlayer.setReleaseMode(ReleaseMode.loop);
+  }
+
+  Future<void> playAudio() async {
+    await audioPlayer.resume();
+    setState(() {
+      isPlaying = true;
+    });
+  }
+
+  Future<void> stopAudio() async {
+    await audioPlayer.stop();
+    setState(() {
+      isPlaying = false;
+    });
+  }
+
   @override
   void dispose() {
-    _timer.cancel();
+    audioPlayer.dispose();
     super.dispose();
+    _timer.cancel();
   }
 
   Widget build(BuildContext context) {
@@ -60,9 +88,13 @@ class _TimerAppState extends State<TimerApp> {
 
     return Scaffold(
       appBar: AppBar(
-        // leading: Icon(Icons.menu),
-        title: Center(child: Text("Timer App")),
-        actions: [Icon(Icons.menu_rounded)],
+        leading: Icon(Icons.star),
+        title: Center(
+            child: Text(
+          "Timer App",
+          style: TextStyle(fontSize: 25.0),
+        )),
+        actions: [IconButton(onPressed: () {}, icon: Icon(Icons.menu))],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -80,7 +112,7 @@ class _TimerAppState extends State<TimerApp> {
                 min: 5,
                 max: 121,
                 appearance: CircularSliderAppearance(
-                    size: 150,
+                    size: 250,
                     // size: 5,
                     infoProperties: InfoProperties(
                         mainLabelStyle:
@@ -101,7 +133,7 @@ class _TimerAppState extends State<TimerApp> {
                     borderRadius: BorderRadius.circular(4)),
                 child: Center(
                     child: Text(formatDuration(_durationInSeconds),
-                        style: TextStyle(fontSize: 40.0))),
+                        style: TextStyle(fontSize: 50.0))),
               ),
             ),
             Padding(
@@ -176,6 +208,7 @@ class _TimerAppState extends State<TimerApp> {
                       child: Center(
                         child: Text(
                           presets[index].toString(),
+                          style: TextStyle(fontSize: 22),
                         ),
                       ),
                     ),
@@ -187,18 +220,19 @@ class _TimerAppState extends State<TimerApp> {
     );
   }
 
-  void startTimer() {
+  void startTimer() async {
     _isFinished = false;
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
         _durationInSeconds--;
-        audioPlayer.open(Audio('assets/river-2.mp3'),
-            loopMode: LoopMode.single);
-        audioPlayer.play();
+
+        playAudio();
 
         if (_durationInSeconds <= 0) {
-          audioPlayer.stop();
+          stopAudio();
           timer.cancel();
+
+          _timer = Timer(Duration.zero, () {});
           _isRunning = false;
           _isFinished = true;
         }
@@ -208,7 +242,10 @@ class _TimerAppState extends State<TimerApp> {
 
   void stopTimer() {
     _timer.cancel();
-    audioPlayer.stop();
+    // audioPlayer.stop();
+    stopAudio();
+    _timer = Timer(Duration.zero, () {});
+
     _isRunning = false;
   }
 
