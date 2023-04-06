@@ -255,6 +255,7 @@ class _TimerAppState extends State<TimerApp> {
                 }),
             Slider(
               value: setVolume * 10,
+              // label: (setVolume * 10).toString(),
               onChanged: (value) {
                 setState(() {
                   setVolume = value / 10;
