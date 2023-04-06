@@ -365,6 +365,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.4.16"
+  tts:
+    dependency: "direct main"
+    description:
+      name: tts
+      sha256: "18f52a5b2feee650e4654ca932513f044bb585722e6ca0a68a6ea3ab7bd2f5f3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.2"
   typed_data:
     dependency: transitive
     description:

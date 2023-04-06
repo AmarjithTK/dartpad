@@ -10,6 +10,8 @@ import 'package:flutter_tts/flutter_tts.dart';
 
 // add assets and improvise this app further in another day
 
+enum TimerStatus { initial, started, stopped, resetted }
+
 class TimerApp extends StatefulWidget {
   const TimerApp({super.key});
 
@@ -23,13 +25,13 @@ class _TimerAppState extends State<TimerApp> {
   FlutterTts flutterTts = FlutterTts();
 
   Future _speak(String word) async {
+    await flutterTts.setVolume(1.0);
+
     var result = await flutterTts.speak(word);
     // if (result == 1) setState(() => ttsState = TtsState.playing);
-    await flutterTts.setLanguage("en-US");
+    // await flutterTts.setLanguage("en-US");
 
-    await flutterTts.setSpeechRate(1.0);
-
-    await flutterTts.setVolume(1.0);
+    // await flutterTts.setSpeechRate(1.0);
   }
 
   // late int _durationInSeconds = 0;
@@ -37,6 +39,8 @@ class _TimerAppState extends State<TimerApp> {
   // int _currentSliderValue = 5;
   bool _isRunning = false;
   bool _isFinished = true;
+
+  TimerStatus timerStatus = TimerStatus.initial;
 
   String user = "Amarjith TK";
 
@@ -103,6 +107,40 @@ class _TimerAppState extends State<TimerApp> {
     });
   }
 
+// showDialog showDialogues {
+//     return showDialog<void>(
+//       context: context,
+//       barrierDismissible: false, // user must tap button!
+//       builder: (BuildContext context) {
+//         return Dialog.fullscreen(
+//           child: Column(
+//             mainAxisAlignment: MainAxisAlignment.center,
+//             // crossAxisAlignment: CrossAxisAlignment.center,
+//             children: [
+//               Center(
+//                 child: Container(
+//                     decoration: BoxDecoration(
+//                         // color: Colors.,
+//                         border: Border.all(
+//                             // width: 4.0,
+//                             color: Color.fromARGB(255, 52, 52, 52))),
+//                     child: Text(formatDuration(_durationInSeconds),
+//                         style: TextStyle(fontSize: 150.0))),
+//               ),
+//               ElevatedButton.icon(
+//                   onPressed: () {
+//                     Navigator.of(context).pop();
+//                   },
+//                   icon: Icon(Icons.keyboard_backspace_sharp),
+//                   label: Text('Exit fullscreen'))
+//             ],
+//           ),
+//         );
+//       },
+//     );
+//   }
+// // --- Button Widget --- //
+
   @override
   void dispose() {
     audioPlayer.dispose();
@@ -157,22 +195,57 @@ class _TimerAppState extends State<TimerApp> {
                               TextStyle(fontSize: 25, color: Colors.white))),
                   onChange: (double value) {
                     setState(() {
-                      if (_isRunning == false && _isFinished == true)
+                      if (timerStatus == TimerStatus.initial ||
+                          timerStatus == TimerStatus.resetted)
                         _durationInSeconds = value.toInt() * 60;
                     });
                   }),
             ),
-            Container(
-              width: double.infinity,
-              height: 100,
-              margin: EdgeInsets.symmetric(horizontal: 10),
-              decoration: BoxDecoration(
-                  // color: Colors.,
-                  border: Border.all(
-                      width: 4.0, color: Color.fromARGB(255, 52, 52, 52))),
-              child: Center(
-                  child: Text(formatDuration(_durationInSeconds),
-                      style: TextStyle(fontSize: 50.0))),
+            InkWell(
+              onTap: () {
+                showDialog(
+                    context: context,
+                    builder: (BuildContext) {
+                      return Dialog.fullscreen(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          // crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Center(
+                              child: Container(
+                                  decoration: BoxDecoration(
+                                      // color: Colors.,
+                                      border: Border.all(
+                                          // width: 4.0,
+                                          color:
+                                              Color.fromARGB(255, 52, 52, 52))),
+                                  child: Text(
+                                      formatDuration(_durationInSeconds),
+                                      style: TextStyle(fontSize: 150.0))),
+                            ),
+                            ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                icon: Icon(Icons.keyboard_backspace_sharp),
+                                label: Text('Exit fullscreen'))
+                          ],
+                        ),
+                      );
+                    });
+              },
+              child: Container(
+                width: double.infinity,
+                height: 100,
+                margin: EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                    // color: Colors.,
+                    border: Border.all(
+                        width: 4.0, color: Color.fromARGB(255, 52, 52, 52))),
+                child: Center(
+                    child: Text(formatDuration(_durationInSeconds),
+                        style: TextStyle(fontSize: 50.0))),
+              ),
             ),
             Padding(
               padding: EdgeInsets.fromLTRB(0, 15, 0, 10),
@@ -184,12 +257,14 @@ class _TimerAppState extends State<TimerApp> {
                       onPressed: () {
                         setState(() {
                           // _isRunning = !_isRunning; // true now
-                          if (_isRunning == false) {
+                          if (timerStatus == TimerStatus.initial ||
+                              timerStatus == TimerStatus.resetted) {
                             _durationInSeconds =
                                 _durationInSeconds > 0 ? _durationInSeconds : 0;
 
                             startTimer();
                             _isRunning = true;
+                            timerStatus = TimerStatus.started;
                           }
                         });
                       },
@@ -227,13 +302,15 @@ class _TimerAppState extends State<TimerApp> {
                   return InkWell(
                     onTap: () {
                       setState(() {
-                        if (_isRunning == false) {
-                          _durationInSeconds = _durationInSeconds > 0
-                              ? _durationInSeconds
-                              : presets[index] * 60;
+                        if (timerStatus == TimerStatus.resetted ||
+                            timerStatus == TimerStatus.initial) {
+                          // _durationInSeconds = _durationInSeconds > 0
+                          //     ? _durationInSeconds
+                          //     : presets[index] * 60;
+                          _durationInSeconds = presets[index] * 60;
 
                           startTimer();
-                          _isRunning = true;
+                          timerStatus = TimerStatus.started;
                         }
                       });
                     },
@@ -253,17 +330,6 @@ class _TimerAppState extends State<TimerApp> {
                     ),
                   );
                 }),
-            Slider(
-              value: setVolume * 10,
-              // label: (setVolume * 10).toString(),
-              onChanged: (value) {
-                setState(() {
-                  setVolume = value / 10;
-                });
-              },
-              min: 1,
-              max: 10,
-            )
           ],
         ),
       ),
@@ -275,11 +341,12 @@ class _TimerAppState extends State<TimerApp> {
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
         _durationInSeconds--;
-
-        if (Platform.isAndroid) {
-          if (_durationInSeconds % 60 == 0) {
-            _speak("$_durationInSeconds/60 seconds");
-          }
+        print(_durationInSeconds % 60);
+        // if (Platform.isAndroid) {
+        if (_durationInSeconds % 60 == 0 && Platform.isAndroid) {
+          print('bin here');
+          _speak("$_durationInSeconds/60 seconds");
+          // }
         }
 
         playAudio();
@@ -288,15 +355,12 @@ class _TimerAppState extends State<TimerApp> {
           stopAudio();
           timer.cancel();
           if (Platform.isAndroid) {
-            if (_durationInSeconds % 60 == 0) {
-              // var user;
-              _speak("Timer is finished $user");
-            }
+            // var user;
+            _speak("Timer is finished $user");
           }
 
           _timer = Timer(Duration.zero, () {});
-          _isRunning = false;
-          _isFinished = true;
+          timerStatus = TimerStatus.initial;
         }
       });
     });
@@ -308,13 +372,13 @@ class _TimerAppState extends State<TimerApp> {
     stopAudio();
     _timer = Timer(Duration.zero, () {});
 
-    _isRunning = false;
+    timerStatus = TimerStatus.stopped;
   }
 
   void resetTimer() {
     stopTimer();
     _timer = Timer(Duration.zero, () {});
-    _isFinished = true;
+    timerStatus = TimerStatus.resetted;
   }
 
   String formatDuration(int durationInSeconds) {

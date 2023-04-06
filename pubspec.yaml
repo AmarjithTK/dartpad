@@ -38,6 +38,7 @@ dependencies:
   sleek_circular_slider: ^2.0.1
   audioplayers: ^3.0.1
   flutter_tts: ^3.6.3
+  tts: ^1.0.2
 
 
 dev_dependencies:
