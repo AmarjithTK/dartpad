@@ -143,6 +143,8 @@ class _TimerAppState extends State<TimerApp> {
 //   }
 // // --- Button Widget --- //
 
+  String _timerString = '00:00';
+
   @override
   void dispose() {
     audioPlayer.dispose();
@@ -155,6 +157,7 @@ class _TimerAppState extends State<TimerApp> {
   Widget build(BuildContext context) {
     // int durationInSeconds = _currentSliderValue * 60;
     // presets = presets.sort((a, b) => a.compareTo(b));
+    _timerString = formatDuration(_durationInSeconds);
 
     presets.sort(
       (a, b) => a.compareTo(b),
@@ -207,36 +210,7 @@ class _TimerAppState extends State<TimerApp> {
             ),
             InkWell(
               onTap: () {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext) {
-                      return Dialog.fullscreen(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          // crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Center(
-                              child: Container(
-                                  decoration: BoxDecoration(
-                                      // color: Colors.,
-                                      border: Border.all(
-                                          // width: 4.0,
-                                          color:
-                                              Color.fromARGB(255, 52, 52, 52))),
-                                  child: Text(
-                                      formatDuration(_durationInSeconds),
-                                      style: TextStyle(fontSize: 150.0))),
-                            ),
-                            ElevatedButton.icon(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                icon: Icon(Icons.keyboard_backspace_sharp),
-                                label: Text('Exit fullscreen'))
-                          ],
-                        ),
-                      );
-                    });
+                // showDialogues();
               },
               child: Container(
                 width: double.infinity,
@@ -247,8 +221,8 @@ class _TimerAppState extends State<TimerApp> {
                     border: Border.all(
                         width: 4.0, color: Color.fromARGB(255, 52, 52, 52))),
                 child: Center(
-                    child: Text(formatDuration(_durationInSeconds),
-                        style: TextStyle(fontSize: 50.0))),
+                    child:
+                        Text(_timerString, style: TextStyle(fontSize: 50.0))),
               ),
             ),
             Padding(
