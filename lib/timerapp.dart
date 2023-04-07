@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'dart:io';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:text_to_speech/text_to_speech.dart';
 
 // add assets and improvise this app further in another day
 
@@ -33,18 +34,13 @@ class _TimerAppState extends State<TimerApp> {
 
   //   // await flutterTts.setSpeechRate(1.0);
   // }
-  FlutterTts ftts = FlutterTts();
-
-  void speakTTS(String word) async {
-//play text to speech
-    var result = await ftts.speak(word);
-  }
+  TextToSpeech tts = TextToSpeech();
 
   // late int _durationInSeconds = 0;
   // late int _initialDurationInSeconds = 0;
   // int _currentSliderValue = 5;
-  bool _isRunning = false;
-  bool _isFinished = true;
+  // bool _isRunning = false;
+  // bool _isFinished = true;
 
   TimerStatus timerStatus = TimerStatus.initial;
 
@@ -346,7 +342,7 @@ class _TimerAppState extends State<TimerApp> {
   }
 
   void startTimer() async {
-    _isFinished = false;
+    // _isFinished = false;
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
         _durationInSeconds--;
@@ -354,7 +350,7 @@ class _TimerAppState extends State<TimerApp> {
         // if (Platform.isAndroid) {
         if (_durationInSeconds % 60 == 0 && Platform.isAndroid) {
           print('bin here');
-          speakTTS("$_durationInSeconds/60 seconds");
+          tts.speak("$_durationInSeconds/60 seconds");
           // }
         }
 
@@ -365,7 +361,7 @@ class _TimerAppState extends State<TimerApp> {
           timer.cancel();
           if (Platform.isAndroid) {
             // var user;
-            speakTTS("Timer is finished $user");
+            tts.speak("Timer is finished $user");
           }
 
           _timer = Timer(Duration.zero, () {});
